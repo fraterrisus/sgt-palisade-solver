@@ -89,7 +89,7 @@ public class Board {
         int x = 0;
         int y = 0;
         for (char ch : matcher.group(4).toCharArray()) {
-            int delta = 0;
+            final int delta;
             if (ch >= '0' && ch <= '9') {
                 builder.clue(x, y, ch - '0');
                 delta = 1;
