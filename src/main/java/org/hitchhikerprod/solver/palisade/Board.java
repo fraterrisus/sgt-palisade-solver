@@ -1,6 +1,12 @@
 package org.hitchhikerprod.solver.palisade;
 
-import org.hitchhikerprod.solver.palisade.pieces.*;
+import org.hitchhikerprod.solver.palisade.pieces.Cell;
+import org.hitchhikerprod.solver.palisade.pieces.Edge;
+import org.hitchhikerprod.solver.palisade.pieces.HEdge;
+import org.hitchhikerprod.solver.palisade.pieces.Junction;
+import org.hitchhikerprod.solver.palisade.pieces.VEdge;
+import org.hitchhikerprod.solver.palisade.strategies.CellHintStrategy;
+import org.hitchhikerprod.solver.palisade.strategies.Strategy;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,21 +16,20 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Board {
-    private record Clue(int x, int y, int hint) {}
+    private record Clue(int x, int y, long hint) {}
 
     private static final Pattern GAME_SPEC = Pattern.compile(
         "\\A(\\d+)x(\\d+)n(\\d+):([a-z0-9]+)\\z"
     );
 
-    private final int width;
-    private final int height;
-    private final int region_size;
+    private static List<Strategy> STRATEGIES = List.of(
+        CellHintStrategy::solve
+    );
 
+    private final int region_size;
     private final Junction boardRoot;
 
     private Board(int width, int height, int region_size, List<Clue> clues) {
-        this.width = width;
-        this.height = height;
         this.region_size = region_size;
 
         Junction[][] junctions = new Junction[height+1][width+1];
@@ -50,7 +55,7 @@ public class Board {
                 final Junction thisJunction = junctions[y][x];
                 if (y > 0) thisJunction.north = vertical_edges[y-1][x];
                 if (x > 0) thisJunction.west = horizontal_edges[y][x-1];
-                if (y < width) thisJunction.south = vertical_edges[y][x];
+                if (y < height) thisJunction.south = vertical_edges[y][x];
                 if (x < width) thisJunction.east = horizontal_edges[y][x];
 
                 if (x < width) {
@@ -77,6 +82,16 @@ public class Board {
                     thisCell.east = vertical_edges[y][x + 1];
                 }
             }
+        }
+
+        for (int x = 0; x < width; x++) {
+            horizontal_edges[0][x].state(Edge.State.YES);
+            horizontal_edges[height][x].state(Edge.State.YES);
+        }
+
+        for (int y = 0; y < height; y++) {
+            vertical_edges[y][0].state(Edge.State.YES);
+            vertical_edges[y][width].state(Edge.State.YES);
         }
 
         this.boardRoot = junctions[0][0];
@@ -116,8 +131,27 @@ public class Board {
         return builder.build();
     }
 
-    public void solve() {
+    public int getRegionSize() {
+        return region_size;
+    }
 
+    public Junction getRoot() {
+        return boardRoot;
+    }
+
+    public void solve() {
+        boolean anyHelp = true;
+        while (anyHelp) {
+            anyHelp = false;
+            for (Strategy strat : STRATEGIES) {
+                anyHelp = anyHelp || strat.solve(this);
+            }
+            System.out.println(this);
+        }
+    }
+
+    public Iterable<Cell> cells() {
+        return () -> new CellIterator(this);
     }
 
     public String toString() {
@@ -129,7 +163,7 @@ public class Board {
             while (true) {
                 sb.append("+");
                 if (j.east == null) break;
-                switch (j.east.state) {
+                switch (j.east.state()) {
                     case YES -> sb.append("-");
                     case NO -> sb.append(" ");
                     case MAYBE -> sb.append("?");
@@ -141,7 +175,7 @@ public class Board {
             j = rowRoot;
             if (j.south == null) break;
             while (true) {
-                switch (j.south.state) {
+                switch (j.south.state()) {
                     case YES -> sb.append("|");
                     case NO -> sb.append(" ");
                     case MAYBE -> sb.append("?");

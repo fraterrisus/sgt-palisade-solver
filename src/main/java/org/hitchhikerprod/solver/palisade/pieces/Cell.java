@@ -1,12 +1,16 @@
 package org.hitchhikerprod.solver.palisade.pieces;
 
+import java.util.List;
+
 public class Cell {
-    public Integer hint;
+    public Long hint;
 
     public HEdge north;
     public HEdge south;
     public VEdge east;
     public VEdge west;
+
+    public boolean satisfied = false;
 
     public Cell() {}
 
@@ -15,5 +19,9 @@ public class Cell {
         this.south = south;
         this.east = east;
         this.west = west;
+    }
+
+    public List<Edge> edges() {
+        return List.of(north, south, east, west);
     }
 }
