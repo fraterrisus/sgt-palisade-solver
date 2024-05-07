@@ -15,6 +15,7 @@ import org.hitchhikerprod.solver.palisade.strategies.CellHintStrategy;
 import org.hitchhikerprod.solver.palisade.strategies.DeadEndStrategy;
 import org.hitchhikerprod.solver.palisade.strategies.Strategy;
 import org.hitchhikerprod.solver.palisade.strategies.TurnTheCornerStrategy;
+import org.hitchhikerprod.solver.palisade.strategies.WhateversLeftStrategy;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -180,6 +181,11 @@ public class Board {
                     System.out.println(this);
                     anyHelp = true;
                 }
+            }
+
+            if (WhateversLeftStrategy.solve(this)) {
+                System.out.println(this);
+                anyHelp = false;
             }
         }
 
