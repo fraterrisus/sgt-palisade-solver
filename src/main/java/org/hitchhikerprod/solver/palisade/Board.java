@@ -1,9 +1,12 @@
 package org.hitchhikerprod.solver.palisade;
 
 import org.hitchhikerprod.solver.palisade.pieces.Cell;
+import org.hitchhikerprod.solver.palisade.pieces.CellIterator;
 import org.hitchhikerprod.solver.palisade.pieces.Edge;
+import org.hitchhikerprod.solver.palisade.pieces.EdgeIterator;
 import org.hitchhikerprod.solver.palisade.pieces.HEdge;
 import org.hitchhikerprod.solver.palisade.pieces.Junction;
+import org.hitchhikerprod.solver.palisade.pieces.JunctionIterator;
 import org.hitchhikerprod.solver.palisade.pieces.VEdge;
 import org.hitchhikerprod.solver.palisade.strategies.BrokenLineStrategy;
 import org.hitchhikerprod.solver.palisade.strategies.CellHintStrategy;
@@ -12,9 +15,13 @@ import org.hitchhikerprod.solver.palisade.strategies.Strategy;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Board {
     private record Clue(int x, int y, long hint) {}
@@ -30,6 +37,7 @@ public class Board {
 
     private final int region_size;
     private final Junction boardRoot;
+    private final Set<Set<Cell>> cellGroups;
 
     private Board(int width, int height, int region_size, List<Clue> clues) {
         this.region_size = region_size;
@@ -96,6 +104,13 @@ public class Board {
             vertical_edges[y][width].state(Edge.State.YES);
         }
 
+        cellGroups = new HashSet<>();
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                cellGroups.add(Set.of(cells[y][x]));
+            }
+        }
+
         this.boardRoot = junctions[0][0];
     }
 
@@ -150,18 +165,75 @@ public class Board {
                 System.out.println(this);
             }
         }
+
+        for (Set<Cell> cellSet : this.cellGroups) {
+            System.out.println("[" +
+                cellSet.stream().map(Object::hashCode).map(Object::toString).collect(Collectors.joining(","))
+                + "]");
+        }
     }
 
     public Iterable<Cell> cells() {
         return () -> new CellIterator(this);
     }
 
+    public Iterable<Edge> edges() {
+        return () -> new EdgeIterator(this);
+    }
+
     public Iterable<Junction> junctions() {
         return () -> new JunctionIterator(this);
     }
 
-    public void joinGroups(Edge e) {
-        // TODO
+    /* To mark an edge as NO is to join two cell groups that are adjacent across that edge.
+     * In doing so, we must search all the other MAYBE edges that separate the two groups and
+     * mark them NO as well. */
+    public void joinGroups(Edge edge) {
+        final Set<Cell> set1, set2;
+        if (edge instanceof HEdge h) {
+            set1 = cellGroups.stream()
+                .filter(set -> set.contains(h.north))
+                .findFirst().orElseThrow();
+            set2 = cellGroups.stream()
+                .filter(set -> set.contains(h.south))
+                .findFirst().orElseThrow();
+        } else if (edge instanceof VEdge v) {
+            set1 = cellGroups.stream()
+                .filter(set -> set.contains(v.west))
+                .findFirst().orElseThrow();
+            set2 = cellGroups.stream()
+                .filter(set -> set.contains(v.east))
+                .findFirst().orElseThrow();
+        } else throw new RuntimeException();
+
+        cellGroups.remove(set1);
+        cellGroups.remove(set2);
+
+        final Set<Cell> newSet = Stream.concat(set1.stream(), set2.stream())
+            .collect(Collectors.toUnmodifiableSet());
+        cellGroups.add(newSet);
+
+        final Set<Edge> edgeSet = set1.stream().flatMap(c -> c.edges().stream())
+            .filter(e -> e.state() == Edge.State.MAYBE)
+            .collect(Collectors.toSet()); // apply uniqueness
+        for (Edge e : edgeSet) {
+            if (e instanceof HEdge h) {
+                if (set2.contains(h.north) || set2.contains(h.south)) {
+                    h.state(Edge.State.NO);
+                }
+            } else if (e instanceof VEdge v) {
+                if (set2.contains(v.west) || set2.contains(v.east)) {
+                    v.state(Edge.State.NO);
+                }
+            } else throw new RuntimeException();
+        }
+
+        // If the new set is complete and there are any MAYBE edges, mark them YES.
+        if (newSet.size() == this.region_size) {
+            newSet.stream().flatMap(c -> c.edges().stream())
+                .filter(e -> e.state() == Edge.State.MAYBE)
+                .forEach(e -> e.state(Edge.State.YES));
+        }
     }
 
     public String toString() {
@@ -174,9 +246,9 @@ public class Board {
                 sb.append("+");
                 if (j.east == null) break;
                 switch (j.east.state()) {
-                    case YES -> sb.append("-");
-                    case NO -> sb.append(" ");
-                    case MAYBE -> sb.append("?");
+                    case YES -> sb.append("===");
+                    case NO -> sb.append("   ");
+                    case MAYBE -> sb.append(" - ");
                 }
                 j = j.east.east;
             }
@@ -188,10 +260,12 @@ public class Board {
                 switch (j.south.state()) {
                     case YES -> sb.append("|");
                     case NO -> sb.append(" ");
-                    case MAYBE -> sb.append("?");
+                    case MAYBE -> sb.append("'");
                 }
                 if (j.east == null) break;
+                sb.append(" ");
                 sb.append(j.east.south.hint == null ? " " : j.east.south.hint);
+                sb.append(" ");
                 j = j.east.east;
             }
             sb.append("\n");

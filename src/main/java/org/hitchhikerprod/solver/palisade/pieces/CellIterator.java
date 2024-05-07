@@ -1,36 +1,36 @@
-package org.hitchhikerprod.solver.palisade;
+package org.hitchhikerprod.solver.palisade.pieces;
 
-import org.hitchhikerprod.solver.palisade.pieces.Junction;
+import org.hitchhikerprod.solver.palisade.Board;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class JunctionIterator implements Iterator<Junction> {
+public class CellIterator implements Iterator<Cell> {
     private final Board board;
-    private Junction rowPtr = null;
-    private Junction cellPtr = null;
+    private Cell rowPtr = null;
+    private Cell cellPtr = null;
 
-    public JunctionIterator(Board board) {
+    public CellIterator(Board board) {
         this.board = board;
     }
 
     @Override
     public boolean hasNext() {
-        return cellPtr == null || rowPtr.south != null || cellPtr.east != null;
+        return cellPtr == null || rowPtr.south.south != null || cellPtr.east.east != null;
     }
 
     @Override
-    public Junction next() {
+    public Cell next() {
         if (cellPtr == null) {
-            cellPtr = board.getRoot();
+            cellPtr = board.getRoot().south.east;
             rowPtr = cellPtr;
             return cellPtr;
         }
-        if (cellPtr.east != null) {
+        if (cellPtr.east.east != null) {
             cellPtr = cellPtr.east.east;
             return cellPtr;
         }
-        if (rowPtr.south != null) {
+        if (cellPtr.south.south != null) {
             rowPtr = rowPtr.south.south;
             cellPtr = rowPtr;
             return cellPtr;
