@@ -15,7 +15,6 @@ public class App {
                 reader = new BufferedReader(new StringReader(args[0]));
             }
             final Board board = Board.from(reader);
-            System.out.println(board);
             board.solve();
         } catch (IOException e) {
             System.err.println("Error reading input board: " + e.getMessage());

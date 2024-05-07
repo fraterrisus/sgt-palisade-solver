@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 public class CellHintStrategy {
     public static boolean solve(Board board) {
         boolean updates = false;
-        for (Cell cell: board.cells()) {
+        for (final Cell cell: board.cells()) {
             if (cell.satisfied) continue;
             if (cell.hint == null) continue;
 
@@ -20,9 +20,11 @@ public class CellHintStrategy {
 
             if (cell.hint.equals(counts.get(Edge.State.YES))) {
                 // If the correct number of edges is already YES, set everything unknown to NO.
-                cell.edges().stream()
-                    .filter(edge -> edge.state() == Edge.State.MAYBE)
-                    .forEach(edge -> edge.state(Edge.State.NO));
+                for (Edge e : cell.edges()) {
+                    if (e.state() != Edge.State.MAYBE) continue;
+                    e.state(Edge.State.NO);
+                    board.joinGroups(e);
+                }
                 cell.satisfied = true;
                 updates = true;
             } else if (cell.hint.equals(counts.get(Edge.State.YES) + counts.get(Edge.State.MAYBE))) {

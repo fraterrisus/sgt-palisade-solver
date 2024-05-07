@@ -5,6 +5,7 @@ import org.hitchhikerprod.solver.palisade.pieces.Edge;
 import org.hitchhikerprod.solver.palisade.pieces.HEdge;
 import org.hitchhikerprod.solver.palisade.pieces.Junction;
 import org.hitchhikerprod.solver.palisade.pieces.VEdge;
+import org.hitchhikerprod.solver.palisade.strategies.BrokenLineStrategy;
 import org.hitchhikerprod.solver.palisade.strategies.CellHintStrategy;
 import org.hitchhikerprod.solver.palisade.strategies.Strategy;
 
@@ -23,6 +24,7 @@ public class Board {
     );
 
     private static List<Strategy> STRATEGIES = List.of(
+        BrokenLineStrategy::solve,
         CellHintStrategy::solve
     );
 
@@ -144,14 +146,22 @@ public class Board {
         while (anyHelp) {
             anyHelp = false;
             for (Strategy strat : STRATEGIES) {
-                anyHelp = anyHelp || strat.solve(this);
+                if (strat.solve(this)) anyHelp = true;
+                System.out.println(this);
             }
-            System.out.println(this);
         }
     }
 
     public Iterable<Cell> cells() {
         return () -> new CellIterator(this);
+    }
+
+    public Iterable<Junction> junctions() {
+        return () -> new JunctionIterator(this);
+    }
+
+    public void joinGroups(Edge e) {
+        // TODO
     }
 
     public String toString() {

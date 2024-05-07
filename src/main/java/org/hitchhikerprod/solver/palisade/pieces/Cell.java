@@ -24,4 +24,12 @@ public class Cell {
     public List<Edge> edges() {
         return List.of(north, south, east, west);
     }
+
+    @Override
+    public String toString() {
+        return "Cell{" +
+            "hint=" + hint +
+            ",satisfied=" + satisfied +
+            '}';
+    }
 }
