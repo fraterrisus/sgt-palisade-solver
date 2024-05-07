@@ -11,6 +11,7 @@ import org.hitchhikerprod.solver.palisade.pieces.VEdge;
 import org.hitchhikerprod.solver.palisade.strategies.AdjacentThreesStrategy;
 import org.hitchhikerprod.solver.palisade.strategies.BrokenLineStrategy;
 import org.hitchhikerprod.solver.palisade.strategies.CellHintStrategy;
+import org.hitchhikerprod.solver.palisade.strategies.DeadEndStrategy;
 import org.hitchhikerprod.solver.palisade.strategies.Strategy;
 
 import java.io.BufferedReader;
@@ -37,7 +38,8 @@ public class Board {
 
     private static List<Strategy> REPEAT_STRATEGIES = List.of(
         BrokenLineStrategy::solve,
-        CellHintStrategy::solve
+        CellHintStrategy::solve,
+        DeadEndStrategy::solve
     );
 
     private final int region_size;
@@ -163,16 +165,17 @@ public class Board {
 
     public void solve() {
         for (Strategy strat : ONE_TIME_STRATEGIES) {
-            strat.solve(this);
-            System.out.println(this);
+            if (strat.solve(this)) System.out.println(this);
         }
 
         boolean anyHelp = true;
         while (anyHelp) {
             anyHelp = false;
             for (Strategy strat : REPEAT_STRATEGIES) {
-                if (strat.solve(this)) anyHelp = true;
-                System.out.println(this);
+                if (strat.solve(this)) {
+                    System.out.println(this);
+                    anyHelp = true;
+                }
             }
         }
 
@@ -181,6 +184,10 @@ public class Board {
                 cellSet.stream().map(Object::hashCode).map(Object::toString).collect(Collectors.joining(","))
                 + "]");
         }
+    }
+
+    public Set<Set<Cell>> cellGroups() {
+        return cellGroups;
     }
 
     public Iterable<Cell> cells() {
@@ -224,7 +231,7 @@ public class Board {
         cellGroups.add(newSet);
 
         final Set<Edge> edgeSet = set1.stream().flatMap(c -> c.edges().stream())
-            .filter(e -> e.state() == Edge.State.MAYBE)
+            .filter(e -> e.hasState(Edge.State.MAYBE))
             .collect(Collectors.toSet()); // apply uniqueness
         for (Edge e : edgeSet) {
             if (e instanceof HEdge h) {
@@ -241,7 +248,7 @@ public class Board {
         // If the new set is complete and there are any MAYBE edges, mark them YES.
         if (newSet.size() == this.region_size) {
             newSet.stream().flatMap(c -> c.edges().stream())
-                .filter(e -> e.state() == Edge.State.MAYBE)
+                .filter(e -> e.hasState(Edge.State.MAYBE))
                 .forEach(e -> e.state(Edge.State.YES));
         }
     }

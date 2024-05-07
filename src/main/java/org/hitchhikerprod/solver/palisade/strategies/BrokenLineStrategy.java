@@ -20,7 +20,7 @@ public class BrokenLineStrategy {
                 && counts.get(Edge.State.MAYBE) == 1) {
                 // 1Y, 2N, 1M: the unknown edge must be YES to continue the unbroken line
                 junc.edges().stream()
-                    .filter(edge -> edge.state() == Edge.State.MAYBE)
+                    .filter(edge -> edge.hasState(Edge.State.MAYBE))
                     .forEach(edge -> edge.state(Edge.State.YES));
                 updates = true;
             } else if (counts.get(Edge.State.NO) == 3

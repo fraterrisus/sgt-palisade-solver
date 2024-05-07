@@ -12,5 +12,9 @@ abstract public class Edge {
     public void state(State state) {
         this.state = state;
     }
+
+    public boolean hasState(State query) {
+        return state == query;
+    }
 }
 
