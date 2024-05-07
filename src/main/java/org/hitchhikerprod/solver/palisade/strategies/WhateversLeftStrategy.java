@@ -7,6 +7,7 @@ import java.util.Set;
 
 public class WhateversLeftStrategy {
     public static boolean solve(Board board) {
+        // FIXME: account for multiple disparate sets of total-size 10
         int remainingGroupsSize = board.cellGroups().stream()
             .map(Set::size)
             .filter(size -> size < board.getRegionSize())

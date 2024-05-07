@@ -31,6 +31,8 @@ public class TurnTheCornerStrategy {
                     edgesToRemove.addAll(junc.edges());
                 } else if (neighbor.hasHint(2) && nCounts.get(Edge.State.YES) == 1) {
                     edgesToRemove.addAll(junc.edges());
+                } else if (neighbor.hasHint(2) && nCounts.get(Edge.State.YES) == 0 && nCounts.get(Edge.State.NO) == 1) {
+                    edgesToAdd.addAll(junc.edges());
                 } else if (neighbor.hasHint(3) && nCounts.get(Edge.State.YES) < 2) {
                     edgesToAdd.addAll(junc.edges());
                 }

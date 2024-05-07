@@ -127,8 +127,11 @@ public class Board {
     }
 
     public static Board from(BufferedReader reader) throws IOException {
-        final Matcher matcher = GAME_SPEC.matcher(reader.readLine());
-        if (!matcher.matches()) {
+        final String rawGameId = reader.readLine();
+        final Matcher matcher = GAME_SPEC.matcher(rawGameId);
+        if (matcher.matches()) {
+            System.out.println(rawGameId);
+        } else {
             throw new IOException("Couldn't parse gameID string");
         }
 
@@ -187,12 +190,6 @@ public class Board {
                 System.out.println(this);
                 anyHelp = false;
             }
-        }
-
-        for (Set<Cell> cellSet : this.cellGroups) {
-            System.out.println("[" +
-                cellSet.stream().map(Object::hashCode).map(Object::toString).collect(Collectors.joining(","))
-                + "]");
         }
     }
 
