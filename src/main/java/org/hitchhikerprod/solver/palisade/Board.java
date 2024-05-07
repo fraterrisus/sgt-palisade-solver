@@ -14,6 +14,7 @@ import org.hitchhikerprod.solver.palisade.strategies.BrokenLineStrategy;
 import org.hitchhikerprod.solver.palisade.strategies.CellHintStrategy;
 import org.hitchhikerprod.solver.palisade.strategies.DeadEndStrategy;
 import org.hitchhikerprod.solver.palisade.strategies.Strategy;
+import org.hitchhikerprod.solver.palisade.strategies.TurnTheCornerStrategy;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -41,7 +42,8 @@ public class Board {
         BrokenLineStrategy::solve,
         CellHintStrategy::solve,
         DeadEndStrategy::solve,
-        BloatedGroupStrategy::solve
+        BloatedGroupStrategy::solve,
+        TurnTheCornerStrategy::solve
     );
 
     private final int region_size;

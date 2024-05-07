@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 public class BrokenLineStrategy {
     public static boolean solve(Board board) {
         boolean updates = false;
-        for (final Junction junc: board.junctions()) {
+        for (final Junction junc : board.junctions()) {
             final Map<Edge.State, Long> counts = junc.edges().stream()
                 .collect(Collectors.groupingBy(Edge::state, Collectors.counting()));
             for (Edge.State s : Edge.State.values()) counts.putIfAbsent(s, 0L);
