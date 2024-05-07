@@ -173,7 +173,7 @@ public class Board {
 
     public void solve() {
         for (Strategy strat : ONE_TIME_STRATEGIES) {
-            if (strat.solve(this)) System.out.println(this);
+            strat.solve(this);
         }
 
         boolean anyHelp = true;
@@ -181,16 +181,18 @@ public class Board {
             anyHelp = false;
             for (Strategy strat : REPEAT_STRATEGIES) {
                 if (strat.solve(this)) {
-                    System.out.println(this);
+                    //System.out.println(this);
                     anyHelp = true;
                 }
             }
 
             if (WhateversLeftStrategy.solve(this)) {
-                System.out.println(this);
+                //System.out.println(this);
                 anyHelp = false;
             }
         }
+
+        System.out.println(this);
     }
 
     public Set<Set<Cell>> cellGroups() {
