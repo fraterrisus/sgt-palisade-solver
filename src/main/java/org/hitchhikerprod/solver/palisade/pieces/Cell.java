@@ -21,6 +21,14 @@ public class Cell {
         this.west = west;
     }
 
+    public boolean hasHint(int query) {
+        return hasHint((long)query);
+    }
+
+    public boolean hasHint(long query) {
+        return hint != null && hint == query;
+    }
+
     public List<Edge> edges() {
         return List.of(north, south, east, west);
     }

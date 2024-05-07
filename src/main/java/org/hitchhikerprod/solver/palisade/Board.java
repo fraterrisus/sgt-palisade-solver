@@ -8,6 +8,7 @@ import org.hitchhikerprod.solver.palisade.pieces.HEdge;
 import org.hitchhikerprod.solver.palisade.pieces.Junction;
 import org.hitchhikerprod.solver.palisade.pieces.JunctionIterator;
 import org.hitchhikerprod.solver.palisade.pieces.VEdge;
+import org.hitchhikerprod.solver.palisade.strategies.AdjacentThreesStrategy;
 import org.hitchhikerprod.solver.palisade.strategies.BrokenLineStrategy;
 import org.hitchhikerprod.solver.palisade.strategies.CellHintStrategy;
 import org.hitchhikerprod.solver.palisade.strategies.Strategy;
@@ -30,7 +31,11 @@ public class Board {
         "\\A(\\d+)x(\\d+)n(\\d+):([a-z0-9]+)\\z"
     );
 
-    private static List<Strategy> STRATEGIES = List.of(
+    private static List<Strategy> ONE_TIME_STRATEGIES = List.of(
+        AdjacentThreesStrategy::solve
+    );
+
+    private static List<Strategy> REPEAT_STRATEGIES = List.of(
         BrokenLineStrategy::solve,
         CellHintStrategy::solve
     );
@@ -157,10 +162,15 @@ public class Board {
     }
 
     public void solve() {
+        for (Strategy strat : ONE_TIME_STRATEGIES) {
+            strat.solve(this);
+            System.out.println(this);
+        }
+
         boolean anyHelp = true;
         while (anyHelp) {
             anyHelp = false;
-            for (Strategy strat : STRATEGIES) {
+            for (Strategy strat : REPEAT_STRATEGIES) {
                 if (strat.solve(this)) anyHelp = true;
                 System.out.println(this);
             }
