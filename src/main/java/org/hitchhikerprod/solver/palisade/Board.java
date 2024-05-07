@@ -9,6 +9,7 @@ import org.hitchhikerprod.solver.palisade.pieces.Junction;
 import org.hitchhikerprod.solver.palisade.pieces.JunctionIterator;
 import org.hitchhikerprod.solver.palisade.pieces.VEdge;
 import org.hitchhikerprod.solver.palisade.strategies.AdjacentThreesStrategy;
+import org.hitchhikerprod.solver.palisade.strategies.BloatedGroupStrategy;
 import org.hitchhikerprod.solver.palisade.strategies.BrokenLineStrategy;
 import org.hitchhikerprod.solver.palisade.strategies.CellHintStrategy;
 import org.hitchhikerprod.solver.palisade.strategies.DeadEndStrategy;
@@ -32,14 +33,15 @@ public class Board {
         "\\A(\\d+)x(\\d+)n(\\d+):([a-z0-9]+)\\z"
     );
 
-    private static List<Strategy> ONE_TIME_STRATEGIES = List.of(
+    private static final List<Strategy> ONE_TIME_STRATEGIES = List.of(
         AdjacentThreesStrategy::solve
     );
 
-    private static List<Strategy> REPEAT_STRATEGIES = List.of(
+    private static final List<Strategy> REPEAT_STRATEGIES = List.of(
         BrokenLineStrategy::solve,
         CellHintStrategy::solve,
-        DeadEndStrategy::solve
+        DeadEndStrategy::solve,
+        BloatedGroupStrategy::solve
     );
 
     private final int region_size;

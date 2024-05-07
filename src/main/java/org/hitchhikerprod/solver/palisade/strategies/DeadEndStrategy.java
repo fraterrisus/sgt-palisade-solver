@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class DeadEndStrategy {
     public static boolean solve(Board board) {
         boolean updates = false;
-        Set<Edge> edgesToRemove = new HashSet<>();
+        final Set<Edge> edgesToRemove = new HashSet<>();
         for (Set<Cell> cellSet : board.cellGroups()) {
             if (cellSet.size() == board.getRegionSize()) continue;
 
